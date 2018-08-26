@@ -1,0 +1,6 @@
+
+The training input is a .csv file with file location saved to filename1 variable. The testing input is a .csv file with file location saved to filename2. The output is the evaluation metrices of the model by calculating the Accuracy, Precision and Recall. The output is written out after the entire training and testing of model to a .txt file in the variable write_out.
+
+The code is a single layer Neural Network with the input layer neuron count as n1, the hidden layer as n2 and the output layer as n3. 
+For MNIST, n1 is 784 (28 * 28), n3 is 10 and variable count to the hidden layer.
+The code converts grayscale images to binary by marking all non-zero value of pixels to 1, and 0 unchanged. 

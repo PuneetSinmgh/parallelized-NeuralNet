@@ -16,19 +16,14 @@ using std::endl;
 using namespace std;
 
 
-	
-
-	float get_random() {
-		return static_cast<float> (rand()) / static_cast<float> (9000000000000);
-		//return 0.00127;
-	}
-
 	std::vector<float> init_weights(int rows, int cols) {
-
+	/*
+	*Initialialising weights using normal distribution between the range of 0,1 
+	*/	
 	unsigned seed = 10;
-  std::default_random_engine generator (seed);
-
-  std::normal_distribution<float> distribution (0.0,1.0);
+	std::default_random_engine generator (seed);
+		
+  	std::normal_distribution<float> distribution (0.0,1.0);
 
 		std::vector<float> temp(rows*cols);
 
@@ -41,12 +36,14 @@ using namespace std;
 		return temp;
 	}
 
-std::vector<float> init_weights_bias(int rows, int cols) {
+	std::vector<float> init_weights_bias(int rows, int cols) {
+	/*
+	* Initialise Biases using normal distribution
+	*/
+		unsigned seed = 100;
+		std::default_random_engine generator (seed);
 
-	unsigned seed = 100;
-  std::default_random_engine generator (seed);
-
-  std::normal_distribution<float> distribution (0.0,1.0);
+  		std::normal_distribution<float> distribution (0.0,1.0);
 
 		std::vector<float> temp(rows*cols);
 
@@ -59,38 +56,42 @@ std::vector<float> init_weights_bias(int rows, int cols) {
 		return temp;
 	}
 
-		const float n1 = 784;
-		const float n2 = 30;
-		const float n3 = 10;
-		const float l2_rows = n2;
-		const float l2_cols = n1;
-		const float l3_rows = n3;
-		const float l3_cols = n2;
-		const int epoch = 30;
+		const float n1 = 784;// Layer 1 (Input layer) neuron count
+		const float n2 = 30;// Layer 2 (Hidden layer) neuron count
+		const float n3 = 10;// Layer 3 (Output layer) neuron count
+		const float l2_rows = n2;// count of layer 2 rows
+		const float l2_cols = n1;// count of layer 2 columns
+		const float l3_rows = n3;// count of layer 3 rows 
+		const float l3_cols = n2;// count of layer 3 columns
+		const int epoch = 3;// Epoch count
 
 		std::vector<float>  L2W;// Layer 2 Weights vector
 		std::vector<float> L3W;// Layer 3 Weights vector
-		std::vector<float> L2B;// Layer 2 Biad vector
+		std::vector<float> L2B;// Layer 2 Bias vector
 		std::vector<float> L3B;// Layer 3 Bias vector
 
-		std::vector<float> A2,A3;
-		std::vector<float> A1(n1);
+		std::vector<float> A2,A3;// Activation Vectors for hidden and output layers
+		std::vector<float> A1(n1);// Activation vector for input layer
 
-		std::vector<float> z2,z3;
+		std::vector<float> z2,z3;// z is product of weights and input(previous activations) and sum of bias 
 
-		std::vector<float> d2,d3;
+		std::vector<float> d2,d3;// delta error for 2 and 3 layers
 
 		std::vector<float> L2nw(n2*n1,0.0);// Layer 2 Weights vector
 		std::vector<float> L3nw(n3*n2,0.0);// Layer 3 Weights vector
-		std::vector<float> L2nb(n2*1,0.0);// Layer 2 Biad vector
+		std::vector<float> L2nb(n2*1,0.0);// Layer 2 Bias vector
 		std::vector<float> L3nb(n3*1,0.0);// Layer 3 Bias vector
-		std::vector<vector <float> > evaluation_mat (n3);
+		std::vector<vector <float> > evaluation_mat (n3);// 10 * 10 matrix for storage of confusion matrix
 		int tot_test_set = 10000;// Total number of test dataset
 		 
-	vector<float> error_mat (epoch);
+	vector<float> error_mat (epoch);// end d3 error for each epoch 
 
 
 std::vector<float> mod_output(vector<float> x) {
+	/*
+	*	Returns vector of 10 elements with 1 on the class label 
+	*/	
+	
 	float temp_max;
 	int location = 0;
 	temp_max = x[0];
@@ -109,7 +110,9 @@ std::vector<float> mod_output(vector<float> x) {
 }
 
 int ind_identifier(vector<float> y) {
-
+/*
+*returns integer as a identifier for class label during testing
+*/
 	float max;
 	int loc = 0;
 	max = y[0];
@@ -128,7 +131,7 @@ int ind_identifier(vector<float> y) {
 
  std::vector<float> operator-(const std::vector<float>& v1, const std::vector<float>& v2){
 
-
+// Operator overload for vector subtraction
 
 	 long int vec_size = v1.size();
 	 std::vector<float> res(vec_size);
@@ -145,7 +148,8 @@ int ind_identifier(vector<float> y) {
 
  std::vector<float> operator+(const std::vector<float>& v1, const std::vector<float>& v2){
 
-	 //std::vector<float> res;
+
+ // Operator overload for vector addition	
 
 
 	 long int vec_size = v1.size();
@@ -160,7 +164,7 @@ int ind_identifier(vector<float> y) {
 
  std::vector<float> operator*(const std::vector<float>& v1, const std::vector<float>& v2){
 
-	 //std::vector<float> res;
+ 	// Operator overload for vector multiplication 
 
 	 long int vec_size = v1.size();
 	 std::vector<float> res(vec_size);
@@ -174,6 +178,9 @@ int ind_identifier(vector<float> y) {
 
 
 vector<float> vec_division(vector<float> a, vector<float> b) {
+	
+	// Vector division function
+
 	vector<float> c(a.size());
 
 	for (int i = 0; i < a.size(); ++i) {
@@ -185,6 +192,8 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
 
  std::vector<float> sigmoid(const std::vector<float>& v1){
 
+ 	// Gives activation for each vector 
+ 	// Using Sigmoid Activation
 
 	 long int vec_size = v1.size();
 	 std::vector<float> res(vec_size);
@@ -200,16 +209,14 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
 
  std::vector <float> sigmoid_d (const std::vector <float>& m1) {
 
+ 	/*
+ 	* Function for derivative of sigmoid function 
+ 	*/
+
      const unsigned long VECTOR_SIZE = m1.size();
      std::vector <float> output (VECTOR_SIZE);
 	vector <float> temp (VECTOR_SIZE,1);
 	
-	
-
-   /*  for( unsigned i = 0; i != VECTOR_SIZE; ++i ) {
-         output[ i ] = m1[ i ] * (1 - m1[ i ]);
-     }
-*/
 
 	output = sigmoid(m1)*(temp - sigmoid(m1));
      return output;
@@ -218,6 +225,10 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
 
  std::vector <float> dot (const std::vector <float>& m1, const std::vector <float>& m2,
                      const int m1_rows, const int m1_columns, const int m2_columns) {
+
+ 	/*
+ 	* Dot product between 2 matrices
+ 	*/
 
 	 std::vector <float> output (m1_rows*m2_columns);
 
@@ -240,6 +251,9 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
 
  std::vector<float> transpose (float *m, const int C, const int R) {
 
+ 	/* 
+ 	*	Transpose of Matrix	
+ 	*/
 
      std::vector<float> mT (C*R);
 
@@ -255,7 +269,9 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
 
  void print ( const vector <float>& v1, int v1_rows, int v1_columns ) {
 
-
+ 	/*
+ 	* Print function for 1-D representation of a matrix
+ 	*/
 	 for( int i = 0; i != v1_rows; ++i ) {
          for( int j = 0; j != v1_columns; ++j ) {
              cout << v1[ i * v1_columns + j ] << " ";
@@ -266,6 +282,10 @@ vector<float> vec_division(vector<float> a, vector<float> b) {
  }
 
 void print_vectors(vector<vector<float> > pvc) {
+
+	/*
+	* Print function for 2-D representation of matrix
+	*/
 
 	for (int g = 0; g < pvc.size(); ++g) {
 		for (auto y = pvc[g].begin(); y != pvc[g].end(); ++y) {
@@ -278,6 +298,9 @@ void print_vectors(vector<vector<float> > pvc) {
 
  std::vector<float> getlabelVector(int n){
 
+ 	/* 
+ 	* Get label vector of image with an input
+ 	*/
 	 std::vector<float> res = {0,0,0,0,0,0,0,0,0,0};
 
 	 res[n]=1;
@@ -287,6 +310,10 @@ void print_vectors(vector<vector<float> > pvc) {
 
  vector<float> update_wandb (vector <float> &a , vector <float> &b, int num){
 
+ 	/*
+ 	*	Update the weights and biases matrices of all network layers after every mini batch
+ 	*
+ 	*/
 	 float eta = 0.5;
 	 int mini_batch_size = 10;
 	vector <float> res (num);
@@ -304,7 +331,9 @@ void print_vectors(vector<vector<float> > pvc) {
 
 void reinit (vector<float> &v){
 	
-		
+	/*
+	*	Re initialise the delta vectors after every mini batches
+	*/	
 	for (int i = 0;i < v.size();++i){
 		v[i] = 0.0;
 	}
@@ -314,15 +343,20 @@ void reinit (vector<float> &v){
 int main(){
 	
 	FILE *fp;
-	char filename1[] = "/home/romal-patel/Desktop/mnist_train.csv";
-	char filename2[] = "/home/romal-patel/Desktop/mnist_test.csv";
-	FILE *write_out ;
-	write_out = fopen("/home/romal-patel/Desktop/training-report.txt","w");
-	char buff[2000];
-	float activation[785];
+	char filename1[] = "/home/romal-patel/Desktop/mnist_train.csv";// training input file link
+	char filename2[] = "/home/romal-patel/Desktop/mnist_test.csv";// testing input file link
+	FILE *write_out ;// file pointer for output file
+	write_out = fopen("/home/romal-patel/Desktop/training-reportdaa.txt","w");// file link to write the output of model and testing results
+	char buff[2000];// buffer for reading from the csv file
+	float activation[785];// input buffer holding vector
 	unsigned i=0;
 	char * token;	
 	int lab=0, batch_size=0;
+
+		/* 
+		* INITIALISING ALL WEIGHTS AND BIASES OF THE NETWORK 
+		*/
+
 		L2W = init_weights(l2_rows, l2_cols);// initializing wieghts for layer 2
 		
 		cout << "L2W-" << endl;
@@ -343,40 +377,30 @@ int main(){
 		cout << "L3B-" << endl;
 		print(L3B,1,n3);
 
-
-		for (int z = 1;z <= epoch;++z){
+		/*
+		*	TRAINING MODEL
+		*/
+		for (int z = 1;z <= epoch;++z){// FOR EACH EPOCH
 			if ( (fp = fopen(filename1, "r") ) == NULL)
 			{
 				printf("Cannot open %s.\n", filename1);
-			  //  result = FAIL;
 			}
 			else{
-
-				//printf("File opened; ready to read.\n");
-
-				//printf("okk");
 				while(!feof(fp)){
 					i=0;
-				//	printf("okk");
+				
 					if(fgets(buff, 2000 ,fp )!=NULL){
 
 						token = strtok(buff,",");
-						//printf("%s\n",token);
 						++batch_size;
-						//printf("%s\n",token);
 							if(batch_size<=10){
-								//printf("%s\n",token);
-								//printf("\ninto if ");
-								//lab = atoi(token);
-								//printf("%d",lab);
-
+								
 									while(token!=NULL){
 										activation[i] = atof(token);
 										 // can use atof to convert to float
 										token = strtok(NULL,",");
 										i++;
 									}
-									//printf("value of i:%d\n",i);
 									std::vector<float> label = getlabelVector(activation[0]);
 							// feed forward
 									for (int j=1; j<=A1.size();j++ ){
@@ -411,8 +435,8 @@ int main(){
 					
 							}
 							else{
-								//printf("weights updated");
-								L3W = update_wandb(L3W,L3nw,n2*n3);
+								//printf("weights updated")
+			;					L3W = update_wandb(L3W,L3nw,n2*n3);
 								L3B = update_wandb(L3B,L3nb,n3);
 								L2W = update_wandb(L2W,L2nw,n1*n2);
 								L2B = update_wandb(L2B,L2nb,n2);
@@ -451,6 +475,12 @@ int main(){
 			fprintf(write_out,"Epoch %d: %f\n",u+1,error_mat[u]);
 			}
 
+
+			/*
+			*	TESTING MODEL 
+			*	every image from test file is fed forward through the network. The actual label and predicted label is recorded 
+			*	and added to the evaluation matrix.
+			*/
 
 		if ( (fp = fopen(filename2, "r") ) == NULL)
 				{
