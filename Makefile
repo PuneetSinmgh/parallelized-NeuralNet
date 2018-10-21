@@ -2,7 +2,10 @@ CC = g++
 CFLAGS = -std=c++11
 
 clean:
-	rm -rf *.o MNIST_binary
+	rm -rf *.o MNIST_binary_int a.out
 
 all:
-	$(CC) $(CFLAGS) MNIST_binary.cpp -o MNIST_binary
+	$(CC) $(CFLAGS) -c main.cpp OO_DNN.cpp
+	$(CC) main.o OO_DNN.o
+	./a.out
+	
