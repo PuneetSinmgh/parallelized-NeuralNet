@@ -5,7 +5,7 @@ clean:
 	rm -rf *.o MNIST_binary_int a.out
 
 all:
-	$(CC) $(CFLAGS) -c main.cpp OO_DNN.cpp
-	$(CC) main.o OO_DNN.o
+	$(CC) $(CFLAGS) -c -fopenmp OO_DNN.cpp main.cpp
+	$(CC) -fopenmp main.o OO_DNN.o
 	./a.out
 	

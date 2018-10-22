@@ -8,6 +8,7 @@
 #include<math.h>
 #include<string.h>
 #include<fnmatch.h>
+#include<omp.h>
 
 using std::vector;
 using std::cout;
@@ -25,7 +26,7 @@ OO_DNN::OO_DNN()
 	 l2_cols =n1;// count of layer 2 columns
 	 l3_rows =n3;// count of layer 3 rows
 	 l3_cols =n2;// count of layer 3 columns
-	 epoch=10;
+	 epoch=2;
     A1.reserve(784);
     L2nw.reserve(n2*n1);// Layer 2 Weights vector
     L3nw.reserve(n3*n2);// Layer 3 Weights vector
@@ -52,6 +53,7 @@ using namespace std;
                       // generates number in the range 1..6
                     std::vector<uint8_t> temp(rows*cols);
 
+                    #pragma omp parallel for
                     for (int i = 0; i < temp.size(); ++i) {
 
                             temp[i]=distribution(generator);
@@ -72,6 +74,7 @@ using namespace std;
 
                     std::vector<uint8_t> temp(rows*cols);
 
+                    #pragma omp parallel for
                     for (int i = 0; i < temp.size(); ++i) {
 
                             temp[i]=distribution(generator);
@@ -133,6 +136,7 @@ using namespace std;
                  long int vec_size = v2.size();
                  std::vector<uint8_t> res(vec_size);
 
+                #pragma omp parallel for
                  for(int i=0;i<vec_size;i++){
                      res[i] = v1[i] - v2[i];
 
@@ -149,7 +153,7 @@ using namespace std;
 
 	 long int vec_size = v1.size();
 	 std::vector<uint8_t> res(vec_size);
-
+     #pragma omp parallel for
 	 for(int i=0;i<vec_size;i++){
 		 res[i] = v1[i]+v2[i];
 	 }
@@ -165,7 +169,7 @@ using namespace std;
 
 	 long int vec_size = v1.size();
 	 std::vector<uint8_t> res(vec_size);
-
+     #pragma omp parallel for
 	 for(int i=0;i<vec_size;i++){
 		 res[i] = v1[i]*v2[i];
 	 }
@@ -183,6 +187,7 @@ using namespace std;
 	 long int vec_size = v1.size();
 	 std::vector<uint8_t> res(vec_size);
 
+     #pragma omp parallel for
 	 for(unsigned i=0;i<vec_size;i++){
 
 		 res[i]= (1 / (1 + expf(-v1[i]))) > 0.5 ? 1 : 0   ;   // defines the sigmoid function
@@ -207,6 +212,7 @@ using namespace std;
  }
 
 
+
  std::vector <uint8_t> OO_DNN::dot (const std::vector <uint8_t>& m1, const std::vector <uint8_t>& m2,
                      const int m1_rows, const int m1_columns, const int m2_columns) {
 
@@ -216,16 +222,21 @@ using namespace std;
 
 	 std::vector <uint8_t> output (m1_rows*m2_columns);
 
-     for( int row = 0; row != m1_rows; ++row ) {
+    #pragma omp parallel for
+     for( int row = 0; row < m1_rows; ++row ) {
 
-         for( int col = 0; col != m2_columns; ++col ) {
+        #pragma omp parallel for
+         for( int col = 0; col < m2_columns; ++col ) {
 
-             output[ row * m2_columns + col ] = 0.f;
+             output[ row * m2_columns + col ] = 0;
+		int b=0;
+            #pragma omp parallel for reduction(+:b)
+             for(int k = 0; k < m1_columns; ++k ) {
 
-             for(int k = 0; k != m1_columns; ++k ) {
-
-                 output[ row * m2_columns + col ] += m1[ row * m1_columns + k ] * m2[ k * m2_columns + col ];
+                 b += m1[ row * m1_columns + k ] * m2[ k * m2_columns + col ];
              }
+
+	     output[ row * m2_columns + col ] = b;
          }
      }
 
@@ -238,10 +249,10 @@ using namespace std;
  	/*
  	*	Transpose of Matrix
  	*/
-
-     std::vector<uint8_t> mT (C*R);
-
-     for(int n = 0; n!=C*R; n++) {
+       int size = C*R ;
+     std::vector<uint8_t> mT (size);
+     #pragma omp parallel for
+     for(int n = 0; n<size; n++) {
          int i = n/C;
          int j = n%C;
          mT[n] = m[R*j + i];
@@ -289,6 +300,7 @@ using namespace std;
 	vector <uint8_t> res (num);
 
  	//a = a - ((eta/mini_batch_size) * b);
+    	#pragma omp parallel for
 	 for (int i = 0 ; i < res.size();++i){
  		b[i] = (eta/mini_batch_size) * b[i];
 		res[i] = a[i] - b[i];
@@ -392,6 +404,7 @@ void OO_DNN::print_vectors(std::vector< std::vector<float> > pvc) {
 									}
 									std::vector<uint8_t> label = getlabelVector(activation[0]);
 							// feed forward
+                      					             
 									for (int j=1; j<=A1.size();j++ ){
 										if (activation[j] == 0){
 											A1[j-1]= 0;
@@ -400,7 +413,7 @@ void OO_DNN::print_vectors(std::vector< std::vector<float> > pvc) {
 											A1[j -1]= 1.0;
 										}
 
-										}//A1[j]=activation[j+1];
+                                    }//A1[j]=activation[j+1];
 									z2=add(dot(L2W,A1,n2,n1,1),L2B);
 
 									A2 = sigmoid(z2);
@@ -519,6 +532,8 @@ void OO_DNN::print_vectors(std::vector< std::vector<float> > pvc) {
 							// feed forward
 							cout<<"print label";
                         print(label,10,1);
+
+                        #pragma omp parallel for
 						for (int j=1; j<=A1.size();j++ ){
 							if (activation[j] == 0){
 								A1[j-1]= 0;
@@ -541,13 +556,13 @@ void OO_DNN::print_vectors(std::vector< std::vector<float> > pvc) {
 						pred_out = mod_output(A3);
 
 						act_ind = ind_identifier(label);
-						cout << "act_ind : " << act_ind << endl;
+						//cout << "act_ind : " << act_ind << endl;
 
 						pred_ind = ind_identifier(pred_out);
-						cout << "pred_ind: " << pred_ind << endl;
+						//cout << "pred_ind: " << pred_ind << endl;
 						//print(A3,n3,1);
 						evaluation_mat[act_ind][pred_ind] += 1.0;
-						cout<<"\nprint results\n";
+						//printf("\nprint results\n");
 
 					}
 
